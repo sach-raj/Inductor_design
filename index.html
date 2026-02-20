@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spiral Inductor Calculator · Stanford SMIRC + Layout View</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap');
+:root{
+  --bg:#07090e;--p1:#0b0e17;--p2:#0f1420;--b1:#1a2535;--b2:#243448;
+  --ink:#c5d5e8;--muted:#3d5568;
+  --hi:#f7c948;--teal:#2de8c0;--blue:#4ab4ff;--orange:#ff6b35;--red:#ff4060;--green:#3dff9a;--purple:#c77dff;
+  --mono:'JetBrains Mono',monospace;--head:'Syne',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--ink);font-family:var(--mono);font-size:12.5px;min-height:100vh;
+  display:grid;grid-template-rows:auto 1fr auto;}
+
+/* ─── HEADER ─────────────────────────────────────── */
+header{background:var(--p1);padding:0 22px;height:50px;display:flex;align-items:center;gap:14px;position:relative;border-bottom:1px solid var(--b2);}
+header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--hi),var(--teal),var(--blue),var(--purple));opacity:.8;}
+.hlogo{font-family:var(--head);font-weight:800;font-size:19px;color:#fff;letter-spacing:-1px;}
+.hlogo em{color:var(--hi);font-style:normal;}
+.hdiv{width:1px;height:24px;background:var(--b2);}
+.hsub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.href{margin-left:auto;font-size:10px;color:var(--muted);}
+.href a{color:var(--blue);text-decoration:none;}
+.href a:hover{color:var(--hi);}
+
+/* ─── LAYOUT ─────────────────────────────────────── */
+main{display:grid;grid-template-columns:340px 1fr;overflow:hidden;height:calc(100vh - 50px - 28px);}
+
+/* ─── LEFT PANEL ─────────────────────────────────── */
+.lpanel{background:var(--p1);border-right:1px solid var(--b1);display:flex;flex-direction:column;overflow:hidden;}
+.lscroll{flex:1;overflow-y:auto;padding-bottom:8px;}
+.sec{padding:11px 15px 5px;}
+.sec-h{display:flex;align-items:center;gap:7px;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid var(--b1);}
+.sn{font-size:9px;font-weight:700;color:var(--bg);background:var(--muted);width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.st{font-family:var(--head);font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;}
+.sd{width:7px;height:7px;border-radius:50%;margin-left:auto;}
+.shape-row{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:9px;}
+.shape-btn{padding:7px 4px;background:var(--p2);border:1px solid var(--b2);color:var(--muted);
+  font-family:var(--head);font-size:10px;font-weight:600;letter-spacing:1px;text-align:center;
+  cursor:pointer;text-transform:uppercase;transition:all .12s;user-select:none;}
+.shape-btn:hover{border-color:var(--hi);color:var(--hi);}
+.shape-btn.active{border-color:var(--hi);color:var(--hi);background:rgba(247,201,72,.08);}
+.shape-icon{font-size:16px;display:block;margin-bottom:2px;}
+.fg{display:grid;gap:7px;margin-bottom:7px;}
+.fg2{grid-template-columns:1fr 1fr;}
+.fg3{grid-template-columns:1fr 1fr 1fr;}
+.fg1{grid-template-columns:1fr;}
+.field{display:flex;flex-direction:column;gap:3px;}
+.field label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;}
+.lu{font-size:9px;color:var(--b2);letter-spacing:0!important;text-transform:none!important;}
+.field input,.field select{background:var(--p2);border:1px solid var(--b2);color:var(--ink);
+  font-family:var(--mono);font-size:13px;font-weight:500;padding:7px 9px;outline:none;width:100%;
+  border-radius:1px;transition:border-color .15s,color .15s,box-shadow .15s;-moz-appearance:textfield;}
+.field input::-webkit-inner-spin-button,.field input::-webkit-outer-spin-button{-webkit-appearance:none;}
+.field input:focus,.field select:focus{border-color:var(--teal);color:var(--teal);box-shadow:0 0 0 2px rgba(45,232,192,.1);}
+.field select{cursor:pointer;}
+.field .hint{font-size:10px;color:var(--muted);line-height:1.4;}
+.derived-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.dp{background:var(--p2);border:1px solid var(--b1);padding:3px 8px;font-size:10px;color:var(--muted);}
+.dp b{color:var(--teal);}
+
+.calc-btn{margin:7px 15px;width:calc(100% - 30px);padding:12px;background:transparent;
+  border:1px solid var(--hi);color:var(--hi);font-family:var(--head);font-size:12px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:7px;}
+.calc-btn:hover{background:var(--hi);color:#000;box-shadow:0 4px 20px rgba(247,201,72,.3);}
+.calc-btn:active{transform:scale(.98);}
+.dl-btn{margin:0 15px 10px;width:calc(100% - 30px);padding:9px;background:transparent;
+  border:1px solid var(--b2);color:var(--muted);font-family:var(--head);font-size:11px;font-weight:600;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:7px;}
+.dl-btn:hover{border-color:var(--teal);color:var(--teal);}
+.dl-btn:disabled{opacity:.3;cursor:not-allowed;}
+
+/* ─── RIGHT PANEL ────────────────────────────────── */
+.rpanel{display:flex;flex-direction:column;overflow:hidden;background:var(--bg);}
+
+/* RESULT CARDS */
+.results-band{background:var(--p1);border-bottom:1px solid var(--b2);padding:11px 16px;
+  display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0;}
+.rc{background:var(--p2);border:1px solid var(--b1);padding:9px 12px;min-width:110px;position:relative;overflow:hidden;}
+.rc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--hi);}
+.rc.bl::before{background:var(--blue);}
+.rc.tl::before{background:var(--teal);}
+.rc.or::before{background:var(--orange);}
+.rc.pu::before{background:var(--purple);}
+.rc-lb{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.rc-v{font-family:var(--head);font-size:22px;font-weight:800;color:var(--hi);line-height:1;}
+.rc-v.bl{color:var(--blue);}.rc-v.tl{color:var(--teal);}.rc-v.or{color:var(--orange);}.rc-v.pu{color:var(--purple);}
+.rc-u{font-size:10px;color:var(--muted);margin-top:1px;}
+.rc-s{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* METHOD ROW */
+.methods-row{display:flex;gap:6px;padding:8px 16px 5px;flex-shrink:0;}
+.mc{flex:1;background:var(--p2);border:1px solid var(--b1);padding:7px 9px;text-align:center;}
+.mc-lb{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.mc-v{font-size:14px;font-weight:600;color:var(--ink);}
+.mc-v.hi{color:var(--hi);}
+.mc-n{font-size:9px;color:var(--muted);margin-top:2px;}
+
+/* ─── TAB SYSTEM ─────────────────────────────────── */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--b1);background:var(--p1);flex-shrink:0;}
+.tab-btn{padding:9px 20px;font-family:var(--head);font-size:11px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;cursor:pointer;color:var(--muted);background:transparent;border:none;
+  border-bottom:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:7px;}
+.tab-btn:hover{color:var(--ink);}
+.tab-btn.active{color:var(--hi);border-bottom-color:var(--hi);}
+.tab-content{flex:1;min-height:0;position:relative;}
+.tab-pane{position:absolute;inset:0;display:none;flex-direction:column;}
+.tab-pane.active{display:flex;}
+
+/* CHARTS TAB */
+.chart-area{flex:1;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;
+  background:var(--b1);overflow:hidden;}
+.chart-pane{background:var(--bg);display:flex;flex-direction:column;padding:9px 12px;}
+.cp-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;flex-shrink:0;}
+.cp-canvas{flex:1;width:100%;min-height:0;}
+canvas{width:100%!important;height:100%!important;}
+.formula-band{background:var(--p1);border-top:1px solid var(--b1);padding:7px 16px;flex-shrink:0;
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+.ftag{font-size:10px;color:var(--muted);display:flex;gap:5px;align-items:center;}
+.ftag .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+
+/* LAYOUT TAB */
+.layout-pane{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.lv-toolbar{background:var(--p1);border-bottom:1px solid var(--b1);padding:8px 16px;
+  display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.lv-info{font-size:10px;color:var(--muted);display:flex;gap:12px;}
+.lv-info span{color:var(--ink);}
+.lv-btn{padding:5px 12px;background:transparent;border:1px solid var(--b2);color:var(--muted);
+  font-family:var(--head);font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  cursor:pointer;transition:all .15s;}
+.lv-btn:hover{border-color:var(--hi);color:var(--hi);}
+.lv-main{flex:1;display:grid;grid-template-columns:1fr auto;overflow:hidden;}
+.lv-svg-wrap{background:var(--bg);display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;padding:16px;}
+.lv-svg-wrap::before{content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(26,37,53,.4) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(26,37,53,.4) 1px,transparent 1px);
+  background-size:20px 20px;}
+#inductor-svg{position:relative;z-index:2;max-width:100%;max-height:100%;
+  filter:drop-shadow(0 0 20px rgba(247,201,72,.12));}
+.lv-legend{background:var(--p1);border-left:1px solid var(--b1);width:170px;overflow-y:auto;
+  padding:12px;display:flex;flex-direction:column;gap:8px;}
+.lv-legend-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.turn-chip{display:flex;align-items:center;gap:7px;padding:6px 8px;
+  background:var(--p2);border:1px solid var(--b1);cursor:pointer;transition:all .12s;}
+.turn-chip:hover{border-color:var(--hi);}
+.turn-chip.hl{border-color:var(--hi);background:rgba(247,201,72,.06);}
+.tc-swatch{width:14px;height:14px;border-radius:2px;flex-shrink:0;}
+.tc-info{font-size:10px;line-height:1.5;}
+.tc-label{color:var(--ink);font-weight:500;}
+.tc-sub{color:var(--muted);font-size:9px;}
+.lv-dims{margin-top:auto;padding-top:8px;border-top:1px solid var(--b1);font-size:10px;
+  color:var(--muted);line-height:2;}
+.lv-dims b{color:var(--teal);}
+
+/* STATUS BAR */
+footer{height:28px;background:var(--p1);border-top:1px solid var(--b1);display:flex;align-items:center;
+  padding:0 18px;gap:10px;font-size:10px;color:var(--muted);}
+.fdot{width:5px;height:5px;border-radius:50%;background:var(--teal);box-shadow:0 0 5px var(--teal);
+  animation:bl 2.5s infinite;flex-shrink:0;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+#fmsg{color:var(--teal);}
+.fright{margin-left:auto;font-size:10px;color:var(--muted);}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--b2);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hlogo">SPIRAL<em>·</em>CALC</div>
+  <div class="hdiv"></div>
+  <span class="hsub">Planar Spiral Inductor · SMIRC Logic + Layout View</span>
+  <div class="href">Based on <a href="http://smirc.stanford.edu/spiralcalc.html" target="_blank">Stanford SMIRC</a> · Mohan et al. IEEE JSSC 1999</div>
+</header>
+
+<main>
+<!-- ─── LEFT PANEL ─────────────────────────────────── -->
+<div class="lpanel">
+  <div class="lscroll">
+    <!-- § GEOMETRY -->
+    <div class="sec">
+      <div class="sec-h">
+        <div class="sn">1</div>
+        <div class="st" style="color:var(--hi)">Geometry</div>
+        <div class="sd" style="background:var(--hi)"></div>
+      </div>
+      <div style="font-size:10px;letter-spacing:1px;color:var(--muted);margin-bottom:6px;">SHAPE</div>
+      <div class="shape-row">
+        <div class="shape-btn" data-shape="square" onclick="setShape(this)">
+          <span class="shape-icon">⬛</span>Square
+        </div>
+        <div class="shape-btn" data-shape="hexagonal" onclick="setShape(this)">
+          <span class="shape-icon">⬡</span>Hex
+        </div>
+        <div class="shape-btn active" data-shape="octagonal" onclick="setShape(this)">
+          <span class="shape-icon">⯃</span>Oct
+        </div>
+        <div class="shape-btn" data-shape="circular" onclick="setShape(this)">
+          <span class="shape-icon">⭕</span>Circle
+        </div>
+      </div>
+      <div class="fg fg2">
+        <div class="field">
+          <label>Outer Diam. <span class="lu">µm</span></label>
+          <input type="number" id="f-dout" value="300" step="10" min="10">
+          <span class="hint">Corner-to-corner</span>
+        </div>
+        <div class="field">
+          <label>Turns (n)</label>
+          <input type="number" id="f-n" value="3" step="1" min="1" max="20">
+        </div>
+      </div>
+      <div class="fg fg2">
+        <div class="field">
+          <label>Width (w) <span class="lu">µm</span></label>
+          <input type="number" id="f-w" value="20" step="1" min="1">
+        </div>
+        <div class="field">
+          <label>Spacing (s) <span class="lu">µm</span></label>
+          <input type="number" id="f-s" value="10" step="1" min="1">
+        </div>
+      </div>
+      <div class="derived-row">
+        <div class="dp">d_in=<b id="d-din">—</b>µm</div>
+        <div class="dp">d_avg=<b id="d-davg">—</b>µm</div>
+        <div class="dp">ρ=<b id="d-rho">—</b></div>
+      </div>
+    </div>
+
+    <!-- § METAL STACK -->
+    <div class="sec">
+      <div class="sec-h">
+        <div class="sn">2</div>
+        <div class="st" style="color:var(--teal)">Metal Stack</div>
+        <div class="sd" style="background:var(--teal)"></div>
+      </div>
+      <div class="fg fg2">
+        <div class="field">
+          <label>Thickness (t) <span class="lu">µm</span></label>
+          <input type="number" id="f-t" value="2" step="0.1" min="0.01">
+        </div>
+        <div class="field">
+          <label>Metal</label>
+          <select id="f-metal">
+            <option value="1.72e-8">Copper</option>
+            <option value="2.65e-8">Aluminum</option>
+            <option value="1.59e-8">Silver</option>
+            <option value="2.20e-8">Gold</option>
+            <option value="1.06e-7">Tungsten</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg fg1">
+        <div class="field">
+          <label>Substrate</label>
+          <select id="f-sub">
+            <option value="glass">Glass (εr=5.0, σ≈0)</option>
+            <option value="fused_silica">Fused Silica (εr=3.78)</option>
+            <option value="hiR_si">High-ρ Silicon (εr=11.9)</option>
+            <option value="std_si">Std Silicon (lossy)</option>
+            <option value="gaas">GaAs (εr=12.9)</option>
+            <option value="sapphire">Sapphire (εr=9.4)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- § FREQUENCY -->
+    <div class="sec">
+      <div class="sec-h">
+        <div class="sn">3</div>
+        <div class="st" style="color:var(--blue)">Frequency Sweep</div>
+        <div class="sd" style="background:var(--blue)"></div>
+      </div>
+      <div class="fg fg2">
+        <div class="field">
+          <label>f_min <span class="lu">GHz</span></label>
+          <input type="number" id="f-fmin" value="0.1" step="0.1" min="0.01">
+        </div>
+        <div class="field">
+          <label>f_max <span class="lu">GHz</span></label>
+          <input type="number" id="f-fmax" value="20" step="1" min="0.1">
+        </div>
+      </div>
+      <div class="fg fg2">
+        <div class="field">
+          <label>Points</label>
+          <input type="number" id="f-fpts" value="100" step="10" min="10" max="500">
+        </div>
+        <div class="field">
+          <label>Eval @ <span class="lu">GHz</span></label>
+          <input type="number" id="f-feval" value="2" step="0.5" min="0.01">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">⟳ Calculate</button>
+  <button class="dl-btn" id="dl-btn" onclick="downloadGDS()" disabled>⬇ Export GDS</button>
+</div>
+
+<!-- ─── RIGHT PANEL ──────────────────────────────── -->
+<div class="rpanel">
+
+  <!-- RESULTS -->
+  <div class="results-band">
+    <div class="rc">
+      <div class="rc-lb">L Wheeler</div>
+      <div class="rc-v" id="r-Lw">—</div>
+      <div class="rc-u">nH</div>
+      <div class="rc-s" id="r-Lw2">—</div>
+    </div>
+    <div class="rc bl">
+      <div class="rc-lb">Q Factor</div>
+      <div class="rc-v bl" id="r-Q">—</div>
+      <div class="rc-u" id="r-Qf">@ — GHz</div>
+      <div class="rc-s" id="r-Qpeak">—</div>
+    </div>
+    <div class="rc tl">
+      <div class="rc-lb">R_dc</div>
+      <div class="rc-v tl" id="r-Rdc">—</div>
+      <div class="rc-u">Ω</div>
+      <div class="rc-s" id="r-Rac">—</div>
+    </div>
+    <div class="rc or">
+      <div class="rc-lb">Wire Length</div>
+      <div class="rc-v or" id="r-len">—</div>
+      <div class="rc-u">mm</div>
+      <div class="rc-s" id="r-area">—</div>
+    </div>
+    <div class="rc pu">
+      <div class="rc-lb">SRF (est.)</div>
+      <div class="rc-v pu" id="r-srf">—</div>
+      <div class="rc-u">GHz</div>
+      <div class="rc-s" id="rs-skin">δ=— µm</div>
+    </div>
+    <div style="background:var(--p2);border:1px solid var(--b1);padding:9px 12px;">
+      <div style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;">Dims</div>
+      <div style="font-size:10px;color:var(--ink);line-height:1.9;">
+        d_in:<b id="rs-din" style="color:var(--teal)"> —</b>µm<br>
+        d_avg:<b id="rs-davg" style="color:var(--teal)"> —</b>µm<br>
+        Fill ρ:<b id="rs-rho" style="color:var(--hi)"> —</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- METHOD COMPARISON -->
+  <div class="methods-row">
+    <div class="mc"><div class="mc-lb">Modified Wheeler</div><div class="mc-v hi" id="m-w">—</div><div class="mc-n">K₁µ₀n²d_avg/(1+K₂ρ) · ±8%</div></div>
+    <div class="mc"><div class="mc-lb">Current Sheet</div><div class="mc-v" id="m-cs">—</div><div class="mc-n">GMD method · ±8%</div></div>
+    <div class="mc"><div class="mc-lb">Monomial</div><div class="mc-v" id="m-mono">—</div><div class="mc-n">Data-fitted · ±3%</div></div>
+    <div class="mc"><div class="mc-lb">Spread</div><div class="mc-v" id="m-spread">—</div><div class="mc-n">Max−Min across methods</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('charts',this)">
+      📊 Analysis Charts
+    </button>
+    <button class="tab-btn" onclick="switchTab('layout',this)">
+      🔲 Layout View
+    </button>
+  </div>
+
+  <div class="tab-content">
+
+    <!-- CHARTS TAB -->
+    <div class="tab-pane active" id="tab-charts">
+      <div class="chart-area">
+        <div class="chart-pane"><div class="cp-title">Inductance L(f) — 3 methods</div><canvas id="c-L" class="cp-canvas"></canvas></div>
+        <div class="chart-pane"><div class="cp-title">Q Factor vs Frequency</div><canvas id="c-Q" class="cp-canvas"></canvas></div>
+        <div class="chart-pane"><div class="cp-title">Series Resistance R_ac(f)</div><canvas id="c-R" class="cp-canvas"></canvas></div>
+        <div class="chart-pane"><div class="cp-title">Skin Depth δ(f)</div><canvas id="c-S" class="cp-canvas"></canvas></div>
+      </div>
+      <div class="formula-band">
+        <span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)">Formulas:</span>
+        <span class="ftag"><div class="dot" style="background:var(--hi)"></div>Wheeler: K₁µ₀n²d_avg/(1+K₂ρ)</span>
+        <span class="ftag"><div class="dot" style="background:var(--teal)"></div>Curr.Sheet: µ₀n²d_avg/2·(c₁ln(c₂/ρ)+c₃ρ+c₄ρ²)</span>
+        <span class="ftag"><div class="dot" style="background:var(--blue)"></div>Monomial: β·d_out^α₁·w^α₂·d_avg^α₃·n^α₄·s^α₅</span>
+      </div>
+    </div>
+
+    <!-- LAYOUT TAB -->
+    <div class="tab-pane" id="tab-layout">
+      <div class="layout-pane">
+        <div class="lv-toolbar">
+          <div class="lv-info">
+            <span>Shape: <span id="lv-shape">Octagonal</span></span>
+            <span>n=<span id="lv-n">3</span> turns</span>
+            <span>w=<span id="lv-w">20</span>µm</span>
+            <span>s=<span id="lv-s">10</span>µm</span>
+            <span>OD=<span id="lv-od">300</span>µm</span>
+          </div>
+          <button class="lv-btn" onclick="saveSVG()">⬇ Save SVG</button>
+          <button class="lv-btn" onclick="savePNG()">⬇ Save PNG</button>
+        </div>
+        <div class="lv-main">
+          <div class="lv-svg-wrap" id="lv-svg-wrap">
+            <svg id="inductor-svg" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="-200 -200 400 400" width="420" height="420">
+              <text x="0" y="0" text-anchor="middle" fill="#3d5568" font-size="14"
+                    font-family="JetBrains Mono">Click Calculate to render layout</text>
+            </svg>
+          </div>
+          <div class="lv-legend" id="lv-legend">
+            <div class="lv-legend-title">Turn Legend</div>
+            <div id="turn-chips"></div>
+            <div class="lv-dims" id="lv-dims">
+              — Calculate first —
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /rpanel -->
+</main>
+
+<footer>
+  <div class="fdot"></div>
+  <span id="fmsg">Ready — configure parameters and click Calculate</span>
+  <div class="fright">Mohan, Hershenson, Boyd, Lee · IEEE JSSC 1999</div>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  CONSTANTS & COEFFICIENTS (Mohan et al. 1999)
+// ════════════════════════════════════════════════════════
+const MU0=4*Math.PI*1e-7;
+const C22=Math.cos(22.5*Math.PI/180), S22=Math.sin(22.5*Math.PI/180);
+
+const WHEELER={
+  square:{K1:2.34,K2:2.75}, hexagonal:{K1:2.33,K2:3.82},
+  octagonal:{K1:2.25,K2:3.55}, circular:{K1:2.46,K2:2.00}
+};
+const CS_COEFF={
+  square:[1.27,2.07,0.18,0.13], hexagonal:[1.09,2.23,0.00,0.17],
+  octagonal:[1.07,2.29,0.00,0.19], circular:[1.00,2.46,0.00,0.20]
+};
+const MONO={
+  square:{b:1.62e-3,a1:-1.21,a2:-0.147,a3:2.40,a4:1.78,a5:-0.030},
+  hexagonal:{b:1.28e-3,a1:-1.24,a2:-0.174,a3:2.47,a4:1.77,a5:-0.049},
+  octagonal:{b:1.33e-3,a1:-1.21,a2:-0.163,a3:2.43,a4:1.75,a5:-0.049},
+  circular:{b:1.00e-3,a1:-1.60,a2:-0.100,a3:2.90,a4:1.65,a5:-0.030}
+};
+const SUBS={
+  glass:[5.0,0], fused_silica:[3.78,0], hiR_si:[11.9,1e-3],
+  std_si:[11.9,10], gaas:[12.9,1e-5], sapphire:[9.4,0]
+};
+
+// Turn colors: outer=bright gold → inner=copper/amber
+const TURN_COLORS=[
+  '#f7c948','#f5a623','#f08030','#e8603a','#d94040',
+  '#c93080','#a020c0','#6040e0','#3060ff','#30a0ff',
+  '#20c0c0','#20e080','#80f040'
+];
+
+let curShape='octagonal', lastResult=null;
+const g=id=>document.getElementById(id);
+
+// ════════════════════════════════════════════════════════
+//  PHYSICS FORMULAS
+// ════════════════════════════════════════════════════════
+function getDims(dout,n,w,s){
+  const din=dout-2*n*w-2*(n-1)*s;
+  const davg=(dout+din)/2, rho=(dout-din)/(dout+din);
+  return {din,davg,rho};
+}
+function L_Wheeler(dout,n,w,s,shape){
+  const{din,davg,rho}=getDims(dout,n,w,s);
+  if(din<=0)return null;
+  const{K1,K2}=WHEELER[shape];
+  return K1*MU0*n*n*davg*1e-6/(1+K2*rho)*1e9;
+}
+function L_CS(dout,n,w,s,shape){
+  const{din,davg,rho}=getDims(dout,n,w,s);
+  if(din<=0||rho<=0)return null;
+  const[c1,c2,c3,c4]=CS_COEFF[shape];
+  return MU0*n*n*davg*1e-6/2*(c1*Math.log(c2/rho)+c3*rho+c4*rho*rho)*1e9;
+}
+function L_Mono(dout,n,w,s,shape){
+  const{din,davg,rho}=getDims(dout,n,w,s);
+  if(din<=0)return null;
+  const c=MONO[shape];
+  return c.b*Math.pow(dout,c.a1)*Math.pow(w,c.a2)*Math.pow(davg,c.a3)*Math.pow(n,c.a4)*Math.pow(s,c.a5);
+}
+function wireLen(dout,n,w,s,shape){
+  let t=0;
+  for(let k=0;k<n;k++){
+    const r=dout/2-k*(w+s)-w/2;
+    if(shape==='octagonal') t+=8*2*r*S22;
+    else if(shape==='square') t+=4*(2*r/Math.SQRT2)*2; // square side from circumradius
+    else if(shape==='hexagonal') t+=6*r;
+    else t+=2*Math.PI*r;
+  }
+  return t;
+}
+function skinDepth(f,rhom){return Math.sqrt(rhom/(Math.PI*f*MU0))*1e6;}
+function R_ac(dout,n,w,s,t,f,rhom,shape){
+  const d=skinDepth(f,rhom), teff=Math.min(t,2*d);
+  return rhom*wireLen(dout,n,w,s,shape)*1e-6/(w*1e-6*teff*1e-6);
+}
+function Qf(L,Rs,f){return 2*Math.PI*f*L*1e-9/Rs;}
+function estSRF(L,dout,n,w,s,shape,er){
+  const l=wireLen(dout,n,w,s,shape)*1e-6;
+  const Cp=8.854e-12*(1+er)/2*(w*1e-6)*l/(1e-6);
+  if(Cp<=0||L<=0)return null;
+  return 1/(2*Math.PI*Math.sqrt(L*1e-9*Cp))/1e9;
+}
+
+// ════════════════════════════════════════════════════════
+//  MAIN CALCULATE
+// ════════════════════════════════════════════════════════
+function calculate(){
+  const dout=parseFloat(g('f-dout').value);
+  const n=parseInt(g('f-n').value);
+  const w=parseFloat(g('f-w').value);
+  const s=parseFloat(g('f-s').value);
+  const t=parseFloat(g('f-t').value);
+  const rhom=parseFloat(g('f-metal').value);
+  const feval=parseFloat(g('f-feval').value)*1e9;
+  const fmin=parseFloat(g('f-fmin').value)*1e9;
+  const fmax=parseFloat(g('f-fmax').value)*1e9;
+  const npts=parseInt(g('f-fpts').value);
+  const shape=curShape;
+  const[er]=SUBS[g('f-sub').value];
+
+  const{din,davg,rho}=getDims(dout,n,w,s);
+  if(din<=0){alert(`Inner diameter negative (${din.toFixed(1)}µm). Reduce turns/width or increase outer diameter.`);return;}
+
+  // Derived
+  ['d-din','rs-din'].forEach(id=>g(id).textContent=din.toFixed(1));
+  ['d-davg','rs-davg'].forEach(id=>g(id).textContent=davg.toFixed(1));
+  ['d-rho','rs-rho'].forEach(id=>g(id).textContent=rho.toFixed(4));
+
+  const Lw=L_Wheeler(dout,n,w,s,shape);
+  const Lcs=L_CS(dout,n,w,s,shape);
+  const Lm=L_Mono(dout,n,w,s,shape);
+  const Ls=[Lw,Lcs,Lm].filter(x=>x!=null);
+  const Lmax=Math.max(...Ls),Lmin=Math.min(...Ls);
+
+  const Rdc=R_ac(dout,n,w,s,t,1,rhom,shape);
+  const Rac=R_ac(dout,n,w,s,t,feval,rhom,shape);
+  const Q=Lw?Qf(Lw,Rac,feval):0;
+  const lmm=wireLen(dout,n,w,s,shape)/1000;
+  const SRF=Lw?estSRF(Lw,dout,n,w,s,shape,er):null;
+  const delta=skinDepth(feval,rhom);
+
+  // Cards
+  g('r-Lw').textContent=Lw?Lw.toFixed(3):'—';
+  g('r-Lw2').textContent='Wheeler formula';
+  g('r-Q').textContent=Q?Q.toFixed(1):'—';
+  g('r-Qf').textContent=`@ ${(feval/1e9).toFixed(1)} GHz`;
+  g('r-Rdc').textContent=Rdc.toFixed(3);
+  g('r-Rac').textContent=`${Rac.toFixed(3)}Ω @ ${(feval/1e9).toFixed(1)}GHz`;
+  g('r-len').textContent=lmm.toFixed(3);
+  g('r-area').textContent=`BBox ${(dout/1000).toFixed(2)}×${(dout/1000).toFixed(2)} mm`;
+  g('r-srf').textContent=SRF?SRF.toFixed(2):'—';
+  g('rs-skin').textContent=`δ=${delta.toFixed(2)}µm @ ${(feval/1e9).toFixed(1)}GHz`;
+
+  // Method comparison
+  g('m-w').textContent=Lw?Lw.toFixed(3)+' nH':'—';
+  g('m-cs').textContent=Lcs?Lcs.toFixed(3)+' nH':'—';
+  g('m-mono').textContent=Lm?Lm.toFixed(3)+' nH':'—';
+  g('m-spread').textContent=Ls.length>1?(Lmax-Lmin).toFixed(4)+' nH':'—';
+
+  // Frequency sweep
+  let Qpeak=0,Qpf=0;
+  const freqs=linspace(fmin,fmax,npts);
+  const LwA=[],LcsA=[],LmA=[],QA=[],RA=[],SA=[];
+  for(const f of freqs){
+    LwA.push(L_Wheeler(dout,n,w,s,shape));
+    LcsA.push(L_CS(dout,n,w,s,shape));
+    LmA.push(L_Mono(dout,n,w,s,shape));
+    const rac=R_ac(dout,n,w,s,t,f,rhom,shape);
+    const q=Lw?Qf(Lw,rac,f):0;
+    RA.push(rac); QA.push(q); SA.push(skinDepth(f,rhom));
+    if(q>Qpeak){Qpeak=q;Qpf=f;}
+  }
+  g('r-Qpeak').textContent=`Peak Q ${Qpeak.toFixed(1)} @ ${(Qpf/1e9).toFixed(1)}GHz`;
+
+  const fGHz=freqs.map(f=>f/1e9);
+  drawChart('c-L',fGHz,[{data:LwA,color:'#f7c948',label:'Wheeler'},{data:LcsA,color:'#2de8c0',label:'Curr.Sheet'},{data:LmA,color:'#4ab4ff',label:'Monomial'}],'f (GHz)','L (nH)',true);
+  drawChart('c-Q',fGHz,[{data:QA,color:'#4ab4ff',label:'Q'}],'f (GHz)','Q');
+  drawChart('c-R',fGHz,[{data:RA,color:'#2de8c0',label:'R_ac (Ω)'}],'f (GHz)','R (Ω)');
+  drawChart('c-S',fGHz,[{data:SA,color:'#c77dff',label:'δ (µm)'}],'f (GHz)','δ (µm)');
+
+  g('dl-btn').disabled=false;
+  lastResult={dout,n,w,s,t,shape,Lw,Rdc};
+
+  // Draw layout
+  drawInductor(dout,n,w,s,shape);
+  // Update layout toolbar info
+  g('lv-shape').textContent={square:'Square',hexagonal:'Hexagonal',octagonal:'Octagonal',circular:'Circular'}[shape];
+  g('lv-n').textContent=n; g('lv-w').textContent=w; g('lv-s').textContent=s; g('lv-od').textContent=dout;
+
+  g('fmsg').textContent=`✓ L=${Lw?.toFixed(3)}nH · Q=${Q.toFixed(1)}@${(feval/1e9).toFixed(1)}GHz · Rdc=${Rdc.toFixed(3)}Ω · l_wire=${lmm.toFixed(2)}mm`;
+}
+
+// ════════════════════════════════════════════════════════
+//  SPIRAL LAYOUT DRAWING (SVG)
+// ════════════════════════════════════════════════════════
+function turnVertices(r,shape){
+  // Returns vertices starting at bottom-right, going CCW to bottom-left
+  // (not closing = open at bottom for spiral connection)
+  if(shape==='octagonal'){
+    const pts=[];
+    for(let i=0;i<8;i++){
+      const a=(-67.5+i*45)*Math.PI/180;
+      pts.push([r*Math.cos(a),r*Math.sin(a)]);
+    }
+    return pts; // 8 pts: BR, R-lo, RT, TR, TL, LT, L-lo, BL
+  }
+  else if(shape==='square'){
+    // corners at -45, 45, 135, 225 (=−135). BR=−45, go CCW to BL=−135 via 45,135
+    const angs=[-45,45,135,225];
+    return angs.map(a=>[r*Math.cos(a*Math.PI/180),r*Math.sin(a*Math.PI/180)]);
+  }
+  else if(shape==='hexagonal'){
+    // Flat-bottom hex: vertices at -30, 30, 90, 150, 210(=−150), 270(=−90)
+    // BR=-30, go CCW to BL=-150 (=210) via 30,90,150,210
+    const angs=[-30,30,90,150,210,270];
+    return angs.map(a=>[r*Math.cos(a*Math.PI/180),r*Math.sin(a*Math.PI/180)]);
+  }
+  else{
+    // Circular: 60 points starting at bottom-right (-80°) going CCW to bottom-left (-100°)
+    const pts=[];
+    const nPts=60;
+    for(let i=0;i<=nPts;i++){
+      const a=(-80+i*(340)/nPts)*Math.PI/180; // −80° to 260° (= −100°), CCW
+      pts.push([r*Math.cos(a),r*Math.sin(a)]);
+    }
+    return pts;
+  }
+}
+
+function drawInductor(dout,n,w,s,shape){
+  const svg=g('inductor-svg');
+  const leadLen=Math.max(dout*0.14, w*6, 30);
+  const pad=dout*0.20+leadLen;
+  const R0=dout/2; // outer circumradius
+  const vb=dout+pad*2;
+  const vbTop=dout/2+pad/2+leadLen;
+  const vbBot=dout/2+pad/2+leadLen;
+
+  svg.setAttribute('viewBox',`${-vb/2} ${-(dout/2+pad/2+leadLen)} ${vb} ${dout+pad+leadLen*1.5}`);
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height','100%');
+
+  // Build SVG content
+  let html='';
+
+  // ── DEFS ───────────────────────────────────────────
+  html+=`<defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="2" orient="auto">
+      <path d="M0,0 L0,4 L6,2 z" fill="#3d5568"/>
+    </marker>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="${w*0.3}" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
+
+  // ── AXES ───────────────────────────────────────────
+  const axLen=vb/2*0.9;
+  html+=`<g opacity="0.25">
+    <line x1="${-axLen}" y1="0" x2="${axLen}" y2="0" stroke="#1a2535" stroke-width="${w*0.15}"/>
+    <line x1="0" y1="${-axLen}" x2="0" y2="${axLen}" stroke="#1a2535" stroke-width="${w*0.15}"/>
+    <circle cx="0" cy="0" r="${w*0.5}" fill="#243448"/>
+  </g>`;
+
+  // ── SPIRAL TURNS ───────────────────────────────────
+  // Draw from outermost to innermost
+  // Each turn: thick stroked polyline at centerline, color-coded by turn index
+  
+  // Collect all centerline points as one continuous polyline
+  // P1 lead → turn 0 (BR→BL) → step → turn 1 (BR→BL) → ... → turn N-1 → P2 lead
+
+  const allPts=[];
+
+  // P1 lead: starts below bottom-right of outermost turn
+  const r0=dout/2-w/2; // outermost centerline circumradius
+  const p1Verts=turnVertices(r0,shape);
+  const p1Start=p1Verts[0]; // bottom-right corner
+  allPts.push([p1Start[0], p1Start[1]+leadLen]); // P1 tip (below)
+  allPts.push([p1Start[0], p1Start[1]]); // enter ring
+
+  // Turns
+  for(let k=0;k<n;k++){
+    const rc=dout/2-k*(w+s)-w/2;
+    const verts=turnVertices(rc,shape);
+    // Add all turn vertices (from BR going CCW to BL)
+    verts.forEach(pt=>allPts.push(pt));
+
+    if(k<n-1){
+      // Step to next inner turn's BR
+      const rcNext=dout/2-(k+1)*(w+s)-w/2;
+      const nextVerts=turnVertices(rcNext,shape);
+      allPts.push(nextVerts[0]); // BR of next turn
+    }
+  }
+
+  // P2 lead: exits below bottom-left of innermost turn
+  const riLast=dout/2-(n-1)*(w+s)-w/2;
+  const lastVerts=turnVertices(riLast,shape);
+  const p2Start=lastVerts[lastVerts.length-1]; // bottom-left of innermost
+  allPts.push([p2Start[0], p2Start[1]]); // exit ring
+  allPts.push([p2Start[0], p2Start[1]+leadLen]); // P2 tip (below)
+
+  // Draw the full spiral path with a gradient along turns
+  // Split into segments per turn and color individually
+  const swStroke=w; // stroke-width in µm (SVG units = µm)
+
+  // Draw individual turn segments with different colors
+  let ptIdx=2; // skip P1 lead pts for now
+
+  // Build per-turn paths
+  const turnPaths=[];
+  for(let k=0;k<n;k++){
+    const rc=dout/2-k*(w+s)-w/2;
+    const nVerts=turnVertices(rc,shape).length;
+    const turnPts=allPts.slice(ptIdx, ptIdx+nVerts);
+    turnPaths.push({pts:turnPts, color:TURN_COLORS[k%TURN_COLORS.length], k});
+    ptIdx+=nVerts;
+    if(k<n-1) ptIdx++; // skip transition pt (draw separately)
+  }
+
+  // Draw transitions (step connectors between turns) in muted color
+  let tIdx=2;
+  for(let k=0;k<n;k++){
+    const nVerts=turnVertices(dout/2-k*(w+s)-w/2,shape).length;
+    tIdx+=nVerts;
+    if(k<n-1){
+      const pt1=allPts[tIdx-1]; // BL of turn k
+      const pt2=allPts[tIdx];   // BR of turn k+1
+      html+=`<line x1="${pt1[0]}" y1="${-pt1[1]}" x2="${pt2[0]}" y2="${-pt2[1]}"
+              stroke="${TURN_COLORS[k%TURN_COLORS.length]}" stroke-width="${swStroke}" stroke-linecap="round" opacity="0.85"/>`;
+      tIdx++;
+    }
+  }
+
+  // Draw turns (outermost first so inner overlaps = correct visual layering)
+  turnPaths.forEach(({pts,color})=>{
+    if(!pts.length)return;
+    const d=pts.map((p,i)=>`${i===0?'M':'L'}${p[0].toFixed(2)},${-p[1].toFixed(2)}`).join(' ');
+    html+=`<path d="${d}" fill="none" stroke="${color}" stroke-width="${swStroke}"
+            stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/>`;
+  });
+
+  // Draw P1 lead
+  const p1Pts=[allPts[0],allPts[1]];
+  html+=`<line x1="${p1Pts[0][0]}" y1="${-p1Pts[0][1]}" x2="${p1Pts[1][0]}" y2="${-p1Pts[1][1]}"
+          stroke="${TURN_COLORS[0]}" stroke-width="${swStroke}" stroke-linecap="square"/>`;
+  // P1 pad
+  html+=`<rect x="${p1Pts[0][0]-swStroke/2}" y="${-p1Pts[0][1]}" width="${swStroke}" height="${swStroke*0.8}"
+          fill="${TURN_COLORS[0]}" rx="${swStroke*0.1}"/>`;
+
+  // Draw P2 lead
+  const p2Pts=[allPts[allPts.length-2],allPts[allPts.length-1]];
+  html+=`<line x1="${p2Pts[0][0]}" y1="${-p2Pts[0][1]}" x2="${p2Pts[1][0]}" y2="${-p2Pts[1][1]}"
+          stroke="${TURN_COLORS[(n-1)%TURN_COLORS.length]}" stroke-width="${swStroke}" stroke-linecap="square"/>`;
+  // P2 pad
+  html+=`<rect x="${p2Pts[1][0]-swStroke/2}" y="${-p2Pts[1][1]}" width="${swStroke}" height="${swStroke*0.8}"
+          fill="${TURN_COLORS[(n-1)%TURN_COLORS.length]}" rx="${swStroke*0.1}"/>`;
+
+  // ── PORT LABELS ────────────────────────────────────
+  const fs=Math.max(w*1.2, dout*0.03, 8);
+  html+=`<text x="${p1Pts[0][0]}" y="${-p1Pts[0][1]+fs*2.2}" text-anchor="middle"
+          fill="#f7c948" font-size="${fs}" font-family="JetBrains Mono" font-weight="600">P1</text>`;
+  html+=`<text x="${p2Pts[1][0]}" y="${-p2Pts[1][1]+fs*2.2}" text-anchor="middle"
+          fill="${TURN_COLORS[(n-1)%TURN_COLORS.length]}" font-size="${fs}" font-family="JetBrains Mono" font-weight="600">P2</text>`;
+
+  // ── DIMENSION ANNOTATIONS ─────────────────────────
+  const aFill='#3d5568';
+  const tk=Math.max(w*0.5,2);
+  const dimOff=dout*0.08+w*2;
+
+  // OD horizontal dimension line (above)
+  const odY=-(R0*C22+dimOff);
+  const odHalf=R0*C22;
+  html+=`
+    <line x1="${-odHalf}" y1="${odY}" x2="${odHalf}" y2="${odY}" stroke="${aFill}" stroke-width="${tk*0.6}" stroke-dasharray="${tk*3} ${tk*2}"/>
+    <line x1="${-odHalf}" y1="${odY-tk}" x2="${-odHalf}" y2="${odY+tk}" stroke="${aFill}" stroke-width="${tk*0.7}"/>
+    <line x1="${odHalf}" y1="${odY-tk}" x2="${odHalf}" y2="${odY+tk}" stroke="${aFill}" stroke-width="${tk*0.7}"/>
+    <text x="0" y="${odY-tk*1.5}" text-anchor="middle" fill="${aFill}" font-size="${fs*0.85}" font-family="JetBrains Mono">OD ${dout}µm</text>`;
+
+  // Width callout (on right side, between outer and inner of outermost turn)
+  if(n>0){
+    const wX=R0*Math.cos(-22.5*Math.PI/180)+dimOff*0.6;
+    const wY1=-(dout/2*Math.sin(-22.5*Math.PI/180));
+    const wY2=-((dout/2-w)*Math.sin(-22.5*Math.PI/180));
+    html+=`
+      <line x1="${wX}" y1="${Math.min(wY1,wY2)-tk}" x2="${wX}" y2="${Math.max(wY1,wY2)+tk}" stroke="${aFill}" stroke-width="${tk*0.6}"/>
+      <text x="${wX+tk*2}" y="${(wY1+wY2)/2+fs*0.35}" fill="${aFill}" font-size="${fs*0.75}" font-family="JetBrains Mono">w=${w}µm</text>`;
+  }
+
+  // Lead length
+  if(leadLen>0){
+    const llX=p1Start[0]+swStroke/2+dimOff*0.4;
+    html+=`
+      <line x1="${llX}" y1="${-p1Start[1]}" x2="${llX}" y2="${-(p1Start[1]-leadLen)}" stroke="${aFill}" stroke-width="${tk*0.6}" stroke-dasharray="${tk*2} ${tk*2}"/>
+      <text x="${llX+tk*2}" y="${-(p1Start[1]-leadLen/2)+fs*0.35}" fill="${aFill}" font-size="${fs*0.7}" font-family="JetBrains Mono">ll=${leadLen.toFixed(0)}µm</text>`;
+  }
+
+  // Turn count label at center
+  html+=`<text x="0" y="${fs*0.4}" text-anchor="middle" fill="rgba(247,201,72,0.25)"
+          font-size="${Math.max(dout*0.12,fs*1.5)}" font-family="Syne" font-weight="800">${n}T</text>`;
+
+  svg.innerHTML=html;
+
+  // ── TURN LEGEND ──────────────────────────────────
+  const chips=g('turn-chips');
+  chips.innerHTML='';
+  for(let k=0;k<n;k++){
+    const rc=(dout/2-k*(w+s)-w/2);
+    const chip=document.createElement('div');
+    chip.className='turn-chip';
+    chip.dataset.turn=k;
+    chip.innerHTML=`
+      <div class="tc-swatch" style="background:${TURN_COLORS[k%TURN_COLORS.length]}"></div>
+      <div class="tc-info">
+        <div class="tc-label">Turn ${k+1}</div>
+        <div class="tc-sub">r_c=${rc.toFixed(1)}µm</div>
+      </div>`;
+    chip.addEventListener('mouseenter',()=>highlightTurn(k));
+    chip.addEventListener('mouseleave',()=>highlightTurn(-1));
+    chips.appendChild(chip);
+  }
+
+  // Dims panel
+  g('lv-dims').innerHTML=`
+    d_in: <b>${getDims(dout,n,w,s).din.toFixed(1)}</b>µm<br>
+    d_avg: <b>${getDims(dout,n,w,s).davg.toFixed(1)}</b>µm<br>
+    Fill ρ: <b>${getDims(dout,n,w,s).rho.toFixed(4)}</b><br>
+    Lead: <b>${leadLen.toFixed(0)}</b>µm<br>
+    Shape: <b>${shape}</b>`;
+}
+
+function highlightTurn(k){
+  // Highlight a specific turn in the SVG
+  const paths=document.querySelectorAll('#inductor-svg path, #inductor-svg line');
+  paths.forEach((el,i)=>{
+    if(k<0){el.style.opacity='';el.style.filter='';}
+    else{
+      const isTarget=(i===k||i===k+n-1);
+      el.style.opacity=isTarget?'1':'0.3';
+    }
+  });
+  document.querySelectorAll('.turn-chip').forEach((chip,i)=>{
+    chip.classList.toggle('hl',i===k);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  CHART ENGINE
+// ════════════════════════════════════════════════════════
+function linspace(a,b,n){const arr=[];for(let i=0;i<n;i++)arr.push(a+(b-a)*i/(n-1));return arr;}
+
+function drawChart(cid,xArr,series,xl,yl,legend=false){
+  const canvas=g(cid);
+  const W=canvas.clientWidth||canvas.offsetWidth||300;
+  const H=canvas.clientHeight||canvas.offsetHeight||180;
+  canvas.width=W*devicePixelRatio; canvas.height=H*devicePixelRatio;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(devicePixelRatio,devicePixelRatio);
+  const pad={top:8,right:legend?82:14,bottom:30,left:46};
+  const pw=W-pad.left-pad.right, ph=H-pad.top-pad.bottom;
+  ctx.fillStyle='#07090e'; ctx.fillRect(0,0,W,H);
+  const allY=series.flatMap(s=>s.data).filter(v=>v!=null&&isFinite(v));
+  if(!allY.length)return;
+  const xMin=xArr[0],xMax=xArr[xArr.length-1];
+  let yMin=Math.min(...allY),yMax=Math.max(...allY);
+  const yPad=(yMax-yMin)*0.08||0.1; yMin-=yPad; yMax+=yPad;
+  const sx=v=>pad.left+(v-xMin)/(xMax-xMin)*pw;
+  const sy=v=>pad.top+ph-(v-yMin)/(yMax-yMin)*ph;
+  ctx.strokeStyle='#1a2535'; ctx.lineWidth=0.8;
+  for(let i=0;i<=5;i++){
+    const y=pad.top+ph*i/5;
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+pw,y);ctx.stroke();
+    const val=yMax-(yMax-yMin)*i/5;
+    ctx.fillStyle='#3d5568';ctx.font=`${10*devicePixelRatio}px JetBrains Mono`;
+    ctx.textAlign='right';ctx.fillText(val.toFixed(val<10&&val>-10?2:1),pad.left-3,y+4);
+  }
+  for(let i=0;i<=5;i++){
+    const x=pad.left+pw*i/5;
+    ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,pad.top+ph);ctx.stroke();
+    ctx.fillStyle='#3d5568';ctx.textAlign='center';
+    ctx.fillText((xMin+(xMax-xMin)*i/5).toFixed(1),x,pad.top+ph+14);
+  }
+  ctx.strokeStyle='#243448';ctx.lineWidth=1.2;ctx.strokeRect(pad.left,pad.top,pw,ph);
+  series.forEach(({data,color})=>{
+    ctx.strokeStyle=color;ctx.lineWidth=1.6;ctx.beginPath();let f=true;
+    for(let i=0;i<xArr.length;i++){
+      const v=data[i];if(v==null||!isFinite(v)){f=true;continue;}
+      const x=sx(xArr[i]),y=sy(v);f?(ctx.moveTo(x,y),f=false):ctx.lineTo(x,y);
+    }ctx.stroke();
+  });
+  if(legend&&series.length>1){
+    let ly=pad.top+6;
+    series.forEach(({color,label})=>{
+      ctx.fillStyle=color;ctx.fillRect(pad.left+pw+4,ly,12,3);
+      ctx.fillStyle='#3d5568';ctx.textAlign='left';ctx.font=`${9*devicePixelRatio}px JetBrains Mono`;
+      ctx.fillText(label,pad.left+pw+20,ly+4);ly+=13;
+    });
+  }
+  ctx.fillStyle='#3d5568';ctx.font=`${9*devicePixelRatio}px JetBrains Mono`;
+  ctx.textAlign='center';ctx.fillText(xl,pad.left+pw/2,H-2);
+  ctx.save();ctx.translate(10,pad.top+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText(yl,0,0);ctx.restore();
+}
+
+// ════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ════════════════════════════════════════════════════════
+function switchTab(name,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  g('tab-'+name).classList.add('active');
+}
+
+// ════════════════════════════════════════════════════════
+//  SHAPE SELECTOR
+// ════════════════════════════════════════════════════════
+function setShape(el){
+  document.querySelectorAll('.shape-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  curShape=el.dataset.shape;
+  updateDerived();
+}
+function updateDerived(){
+  const dout=parseFloat(g('f-dout').value)||300;
+  const n=parseInt(g('f-n').value)||3;
+  const w=parseFloat(g('f-w').value)||20;
+  const s=parseFloat(g('f-s').value)||10;
+  const{din,davg,rho}=getDims(dout,n,w,s);
+  g('d-din').textContent=din<=0?'⚠ INVALID':din.toFixed(1);
+  g('d-davg').textContent=davg.toFixed(1);
+  g('d-rho').textContent=rho.toFixed(4);
+}
+['f-dout','f-n','f-w','f-s'].forEach(id=>g(id).addEventListener('input',updateDerived));
+
+// ════════════════════════════════════════════════════════
+//  SAVE SVG / PNG
+// ════════════════════════════════════════════════════════
+function saveSVG(){
+  const svg=g('inductor-svg');
+  if(!svg)return;
+  const data=new XMLSerializer().serializeToString(svg);
+  const blob=new Blob([data],{type:'image/svg+xml'});
+  const a=Object.assign(document.createElement('a'),{
+    href:URL.createObjectURL(blob),
+    download:`inductor_${curShape}_${g('f-n').value}T_${g('f-dout').value}um.svg`
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function savePNG(){
+  const svg=g('inductor-svg');
+  if(!svg)return;
+  const sz=800;
+  const svgData=new XMLSerializer().serializeToString(svg);
+  const img=new Image();
+  const canvas=document.createElement('canvas');
+  canvas.width=canvas.height=sz;
+  const ctx=canvas.getContext('2d');
+  img.onload=()=>{
+    ctx.fillStyle='#07090e'; ctx.fillRect(0,0,sz,sz);
+    ctx.drawImage(img,0,0,sz,sz);
+    const a=Object.assign(document.createElement('a'),{
+      href:canvas.toDataURL('image/png'),
+      download:`inductor_${curShape}_${g('f-n').value}T_${g('f-dout').value}um.png`
+    });
+    a.click();
+  };
+  img.src='data:image/svg+xml;base64,'+btoa(unescape(encodeURIComponent(svgData)));
+}
+
+// ════════════════════════════════════════════════════════
+//  GDS EXPORT
+// ════════════════════════════════════════════════════════
+function gR(v){if(!v)return new Array(8).fill(0);const sg=v<0?0x80:0;v=Math.abs(v);let e=0;
+  while(v>=1){v/=16;e++;}while(v<0.0625){v*=16;e--;}
+  const b=[sg|((e+64)&0x7F)];for(let i=0;i<7;i++){v*=256;const x=Math.floor(v);b.push(x);v-=x;}return b;}
+const u16=v=>{v&=0xFFFF;return[(v>>8)&0xFF,v&0xFF];};
+const i32=v=>{v=Math.round(v);if(v<0)v+=0x100000000;return[(v>>>24)&0xFF,(v>>>16)&0xFF,(v>>>8)&0xFF,v&0xFF];};
+const rec=(t,d,d2)=>{const l=4+d2.length;return[l>>8,l&0xFF,t,d,...d2];};
+const nd=t=>[0,4,t,0];
+const sR=(t,s)=>{const b=s.split('').map(c=>c.charCodeAt(0)&0x7F);if(b.length%2)b.push(0);return rec(t,0x06,b);};
+function ts(){const d=new Date(),a=[d.getFullYear(),d.getMonth()+1,d.getDate(),d.getHours(),d.getMinutes(),d.getSeconds()];return[...a,...a].flatMap(x=>u16(x));}
+
+function downloadGDS(){
+  if(!lastResult)return;
+  const{dout,n,w,s,shape,Lw}=lastResult;
+  // Build outer ring polygon (outermost turn, with leads)
+  const C22=Math.cos(22.5*Math.PI/180), S22=Math.sin(22.5*Math.PI/180);
+  const ro=dout/2, ri=ro-w;
+  const lo=ro*S22, apo=ro*C22, api=ri*C22, ci=ri*S22;
+  const li=20, l_ow=li+w, ty=apo+Math.max(dout*0.12,50);
+  const pts=shape==='octagonal'?[
+    [lo,-apo],[ro*C22,-ro*S22],[ro*C22,ro*S22],[ro*S22,ro*C22],
+    [-ro*S22,ro*C22],[-ro*C22,ro*S22],[-ro*C22,-ro*S22],[-lo,-apo],
+    [-l_ow,-apo],[-l_ow,-ty],[-li,-ty],[-li,-api],
+    [-ci,-api],[-ri*C22,-ri*S22],[-ri*C22,ri*S22],[-ri*S22,ri*C22],
+    [ri*S22,ri*C22],[ri*C22,ri*S22],[ri*C22,-ri*S22],[ci,-api],
+    [li,-api],[li,-ty],[l_ow,-ty],[l_ow,-apo]
+  ]:[];
+  if(!pts.length){alert('GDS export only supported for octagonal shape currently.');return;}
+  const closed=[...pts,pts[0]];
+  const xy=closed.flatMap(([x,y])=>[...i32(Math.round(x*1000)),...i32(Math.round(y*1000))]);
+  const cell=`spiral_${n}T_${Lw?.toFixed(1)?.replace('.','p')}nH`;
+  const bytes=[
+    ...rec(0x00,0x02,u16(600)),...rec(0x01,0x02,ts()),
+    ...sR(0x02,cell+'_lib'),...rec(0x03,0x05,[...gR(.001),...gR(1e-9)]),
+    ...rec(0x05,0x02,ts()),...sR(0x06,cell),
+    ...nd(0x08),...rec(0x0D,0x02,u16(50)),...rec(0x0E,0x02,u16(20)),
+    ...rec(0x10,0x03,xy),...nd(0x11),...nd(0x07),...nd(0x04)
+  ];
+  const a=Object.assign(document.createElement('a'),{
+    href:URL.createObjectURL(new Blob([new Uint8Array(bytes)],{type:'application/octet-stream'})),
+    download:`${cell}.gds`
+  });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ── INIT ──────────────────────────────────────────────
+updateDerived();
+calculate();
+</script>
+</body>
+</html>
